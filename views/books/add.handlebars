@@ -1,0 +1,42 @@
+<section class="card">
+  <h1>Thêm sách mới</h1>
+
+  {{#if error}}
+    <p class="error" role="alert">{{error}}</p>
+  {{/if}}
+
+  <form action="/books" method="POST">
+    <label for="productCode">Mã sách</label>
+    <input
+      id="productCode"
+      name="productCode"
+      value="{{form.productCode}}"
+      placeholder="Ví dụ: {{productPrefix}}001"
+      required
+    >
+
+    <label for="name">Tên sách</label>
+    <input
+      id="name"
+      name="name"
+      value="{{form.name}}"
+      required
+    >
+
+    <label for="price">Giá gốc (đồng)</label>
+    <input
+      id="price"
+      name="price"
+      type="number"
+      min="0"
+      step="1"
+      value="{{form.price}}"
+      required
+    >
+
+    <p>Hệ thống tự tính VAT {{vatRate}}% khi lưu.</p>
+
+    <button type="submit">Lưu sách</button>
+    <a href="/books">Quay lại danh sách</a>
+  </form>
+</section>
