@@ -1,3 +1,4 @@
+const { createSessionMiddleware } = require("./config/session");
 require("dotenv").config();
 
 const express = require("express");
@@ -13,9 +14,7 @@ const {
 } = require("./services/bookService");
 
 const app = express();
-
 app.set("trust proxy", 1);
-
 app.engine(
   "handlebars",
   engine({
@@ -36,7 +35,29 @@ app.set("views", path.join(__dirname, "../views"));
 
 app.use(express.urlencoded({ extended: false, limit: "10kb" }));
 app.use(express.static(path.join(__dirname, "../public")));
+app.use(createSessionMiddleware());
+app.get("/session-test", (req, res, next) => {
+  if (!req.session.createdAt) {
+    req.session.createdAt = new Date().toISOString();
+  }
 
+  req.session.visits = (req.session.visits || 0) + 1;
+
+  req.session.save((error) => {
+    if (error) return next(error);
+
+    res.set("Cache-Control", "no-store");
+
+    res.json({
+      fullName: personalization.fullName,
+      mssv: personalization.mssv,
+      visits: req.session.visits,
+      createdAt: req.session.createdAt,
+      serverProcess: process.pid,
+      storage: "MongoDB Atlas",
+    });
+  });
+});
 // Thông tin dùng chung cho giao diện và footer.
 app.use((req, res, next) => {
   Object.assign(res.locals, personalization);
@@ -91,7 +112,6 @@ app.post("/books", async (req, res, next) => {
 
 app.use((error, req, res, next) => {
   console.error("Lỗi xử lý yêu cầu:", error.name);
-
   res.status(500).type("text").send(
     "Không xử lý được yêu cầu. Kiểm tra kết nối và quyền database."
   );
